@@ -77,7 +77,11 @@ class CNNPredictor:
             probs = torch.softmax(logits, dim=1)[0]
             top_probs, top_idxs = probs.topk(min(topk, num_classes))
         
+        results = []   
         for p, idx in zip(top_probs.tolist(), top_idxs.tolist()):
             print(f"{classes[idx]:<20}  {p:.3f}")
+            results.append((classes[idx], p)) 
+        
+        return results 
 
 

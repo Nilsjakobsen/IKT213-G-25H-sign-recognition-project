@@ -11,6 +11,7 @@ class HSVColorMask:
         self.red2=(np.array([170, 90, 90]), np.array([179, 255, 255]))
         self.yellow=(np.array([15, 80, 100]), np.array([40,  255, 255])) 
         self.white= (np.array([0,0,180]),np.array([179,60,255]))
+        self.subsign_yellow=(np.array([25, 150, 150]), np.array([35, 255, 255]))
 
 
     def get_masks(self, hsv):
@@ -33,7 +34,7 @@ class HSVColorMask:
 
 #CLass for filtering logical sign shapes based on apect ratio and area.
 class Geometry_finder:
-    def __init__(self, minimum_area=15*15, max_aspect_ratio=2.0):
+    def __init__(self, minimum_area=80*80, max_aspect_ratio=2.0): # størrelsen på utkippene 
         self.min_area = minimum_area
         self.max_aspect_ratio = max_aspect_ratio
 
@@ -43,6 +44,24 @@ class Geometry_finder:
             return False
         ar = max(w, h) / max(1, min(w, h))
         return ar  <= self.max_aspect_ratio
+    
+    def is_rectangular(self, Shape_edge, min_area=700):
+        area = cv2.contourArea(Shape_edge)
+        if area < min_area:
+            return False
+        
+        rect = cv2.minAreaRect(Shape_edge)
+        w, h = rect[1]
+        if w == 0 or h == 0:
+            return False
+        
+        ar = max(w, h) / max(1, min(w, h))
+        if not (2.3 <= ar <= 6.0):
+            return False
+        
+        rect_area = w * h
+        fill_ratio = area / rect_area if rect_area > 0 else 0
+        return fill_ratio > 0.72
     
 #Class for extracting signs from start to  finish.
 class Sign_extractor_class:
@@ -93,5 +112,33 @@ class Sign_extractor_class:
                 continue
             
             saved.append(self.save_crop(img,  (x, y, w, h), i))
+        
+        saved.extend(self.extract_subsigns(img, hsv))
+        return saved
+
+    def extract_subsigns(self, img, hsv):
+        subsign_yellow = cv2.inRange(hsv, *self.color_mask.subsign_yellow)
+        k = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        subsign_yellow = cv2.morphologyEx(subsign_yellow, cv2.MORPH_CLOSE, k, iterations=3)
+        contours, _ = cv2.findContours(subsign_yellow, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        saved = []
+        
+        for i, c in enumerate(contours):
+            if self.geometry.is_rectangular(c):
+                rect = cv2.minAreaRect(c)
+                box = cv2.boxPoints(rect)
+                box = np.intp(box)
+                
+                mask = np.zeros(subsign_yellow.shape, dtype=np.uint8)
+                cv2.drawContours(mask, [box], 0, 255, -1)
+                
+                masked_yellow = cv2.bitwise_and(subsign_yellow, mask)
+                yellow_pixels = np.sum(masked_yellow > 0)
+                total_pixels = np.sum(mask > 0)
+                yellow_ratio = yellow_pixels / total_pixels if total_pixels > 0 else 0
+                
+                if yellow_ratio > 0.40:
+                    x, y, w, h = cv2.boundingRect(c)
+                    saved.append(self.save_crop(img, (x, y, w, h), 900 + i))
         return saved
      

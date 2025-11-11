@@ -2,6 +2,7 @@ from Sign_processing.Map_extractor import MapExtractor, ORB_maps
 from pathlib import Path
 from Sign_processing.Sign_extractor import Sign_extractor_class
 from Sign_processing.cnn import CNNPredictor
+import csv
 
 if __name__ == "__main__":
 
@@ -21,5 +22,28 @@ if __name__ == "__main__":
     model_path = Path("Sign_processing/demo/cnn.pth")
     classes_path = Path("Sign_processing/demo/classes.json")
     predictor = CNNPredictor(model_path, classes_path)
-    predictor.predict("Outputs/Output_from_Sign_extractor/page_7_016.png")
+    
+    # Loop through all signs and save results to CSV
+    results = []
+    sign_files = sorted(output_dir_sign.glob("*.png"))
+    
+    for sign_path in sign_files:
+        print(f"Processing {sign_path.name}...")
+        prediction_results = predictor.predict(str(sign_path))
+        if prediction_results:
+            top_class, top_prob = prediction_results[0]
+            results.append({
+                'filename': sign_path.name,
+                'predicted_class': top_class,
+                'confidence': top_prob
+            })
+    
+    # Save results to CSV
+    csv_output = Path("Outputs/sign_predictions.csv")
+    with open(csv_output, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['filename', 'predicted_class', 'confidence'])
+        writer.writeheader()
+        writer.writerows(results)
+    
+    print(f"\nResults saved to {csv_output}")
     
