@@ -225,7 +225,7 @@ def augment_and_save(image_path: Path, dst_dir: Path):
     
     img = resize_to_target(img, TARGET_SIZE)
     dst_dir.mkdir(parents=True, exist_ok=True)
-    basefile = image_path.sbasefile
+    basefile = image_path.stem
 
     # Clean the previous augmented files
     if CLEAN_FIRST:
