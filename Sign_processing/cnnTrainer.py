@@ -28,7 +28,7 @@ class CNNTrainer:
         # Training parameters
         self.img_size = 128
         self.batch_size = 128
-        self.epochs = 5
+        self.epochs = 15
         self.lr = 1e-3
         self.num_workers = 0
         self.allowed_exts = {".png", ".jpg", ".jpeg"}

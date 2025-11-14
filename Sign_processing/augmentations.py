@@ -48,7 +48,7 @@ ZOOM_P          = 0.2                                           # Probability of
 ZOOM_AMOUNT_MAX = 1.6                                           # Max zoom factor
 CLEAN_FIRST = True                          # delete old files with *_ang* in it before creating new ones
 # VAL blur for validation
-VAL_BLUR_VARIANTS = 5                                           # Number of blur-only variants per base image
+VAL_BLUR_VARIANTS = 3                                           # Number of blur-only variants per base image
 VAL_SUFFIX_RE = re.compile(r".*_valblur_v\d+\.png$", re.IGNORECASE)
 # ------------------------------
 
