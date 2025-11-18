@@ -303,9 +303,9 @@ For detailed API documentation, see `frontend_files/docs/API_EXAMPLES.md`
 
 ### Supported Sign Classes
 
-- Speed limits: 110, 132g, 149g, 150m
+- Direction/warning: 110, 132g, 149g, 150m
 - Combined signs: 110+132g
-- Direction/warning: 362_50g, 362_60, 362_60g, 362_70, 362_80
+- Speed limits: 362_50g, 362_60, 362_60g, 362_70, 362_80
 - Special: manuellDirigering, vegmarkeringMangler
 
 ## 📊 Output
